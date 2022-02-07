@@ -60,17 +60,18 @@ class WorkerMITM(MITMBase):
                 (self.last_location.lat == 0.0 and self.last_location.lng == 0.0)):
             self.logger.debug("main: Teleporting...")
             self._transporttype = 0
-            self._communicator.set_location(
-                Location(self.current_location.lat, self.current_location.lng), 0)
-            # the time we will take as a starting point to wait for data...
-            timestamp_to_use = math.floor(time.time())
 
-            delay_used, speed_mps_calculated = calculate_cooldown(distance, 30 / 3.6)
-
-            # Run fast...
-            timestamp_to_use = self._walk_to_location(speed_mps_calculated * 3.6)
-            self._communicator.set_location(
-                Location(self.current_location.lat, self.current_location.lng), 0)
+            if self.last_location.lat == 0.0 and self.last_location.lng == 0.0:
+                self.logger.info('Starting fresh round - using lower delay')
+                self._communicator.set_location(
+                    Location(self.current_location.lat, self.current_location.lng), 0)
+                timestamp_to_use = int(time.time())
+            else:
+                delay_used, speed_mps_calculated = calculate_cooldown(distance, 30 / 3.6)
+                # Run fast...
+                timestamp_to_use = self._walk_to_location(speed_mps_calculated * 3.6)
+                self._communicator.set_location(
+                    Location(self.current_location.lat, self.current_location.lng), 0)
             delay_used = self.get_devicesettings_value('post_teleport_delay', 0)
             # Test for cooldown / teleported distance TODO: check this block...
             if self.get_devicesettings_value('cool_down_sleep', False):
