@@ -160,7 +160,7 @@ class WorkerQuests(MITMBase):
                 self._communicator.set_location(
                     Location(self.current_location.lat, self.current_location.lng), 0)
             else:
-                delay_used, speed_mps_calculated = calculate_cooldown(distance, speed)
+                delay_used, speed_mps_calculated = calculate_cooldown(distance, 50)
                 self._walk_to_location(speed_mps_calculated * 3.6)
                 self._communicator.set_location(
                     Location(self.current_location.lat, self.current_location.lng), 0)
