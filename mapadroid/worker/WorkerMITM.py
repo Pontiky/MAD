@@ -8,6 +8,7 @@ from mapadroid.mitm_receiver.MitmMapper import MitmMapper
 from mapadroid.ocr.pogoWindows import PogoWindows
 from mapadroid.utils import MappingManager
 from mapadroid.utils.collections import Location
+from mapadroid.utils.gamemechanicutil import calculate_cooldown
 from mapadroid.utils.logging import LoggerEnums, get_logger
 from mapadroid.utils.madGlobals import InternalStopWorkerException
 from mapadroid.utils.ProtoIdentifier import ProtoIdentifier
@@ -64,6 +65,12 @@ class WorkerMITM(MITMBase):
             # the time we will take as a starting point to wait for data...
             timestamp_to_use = math.floor(time.time())
 
+            delay_used, speed_mps_calculated = calculate_cooldown(distance, 30 / 3.6)
+
+            # Run fast...
+            timestamp_to_use = self._walk_to_location(speed_mps_calculated * 3.6)
+            self._communicator.set_location(
+                Location(self.current_location.lat, self.current_location.lng), 0)
             delay_used = self.get_devicesettings_value('post_teleport_delay', 0)
             # Test for cooldown / teleported distance TODO: check this block...
             if self.get_devicesettings_value('cool_down_sleep', False):

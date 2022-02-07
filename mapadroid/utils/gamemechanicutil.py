@@ -377,4 +377,4 @@ def calculate_cooldown(distance, speed):
     delay_used = distance / speed
     if delay_used > 7200:  # There's a maximum of 2 hours wait time
         delay_used = 7200
-    return delay_used
+    return delay_used, speed

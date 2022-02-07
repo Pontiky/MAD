@@ -155,24 +155,27 @@ class WorkerQuests(MITMBase):
                 or (self.last_location.lat == 0.0 and self.last_location.lng == 0.0)):
             self.logger.debug("main: Teleporting...")
             self._transporttype = 0
-            self._communicator.set_location(
-                Location(self.current_location.lat, self.current_location.lng), 0)
+            if self.last_location.lat == 0.0 and self.last_location.lng == 0.0:
+                self.logger.info('Starting fresh round - using lower delay')
+                self._communicator.set_location(
+                    Location(self.current_location.lat, self.current_location.lng), 0)
+            else:
+                delay_used, speed_mps_calculated = calculate_cooldown(distance, speed)
+                self._walk_to_location(speed_mps_calculated * 3.6)
+                self._communicator.set_location(
+                    Location(self.current_location.lat, self.current_location.lng), 0)
             # the time we will take as a starting point to wait for data...
             cur_time = math.floor(time.time())
 
             delay_used = self.get_devicesettings_value('post_teleport_delay', 0)
             speed = 16.67  # Speed can be 60 km/h up to distances of 3km
 
-            if self.last_location.lat == 0.0 and self.last_location.lng == 0.0:
-                self.logger.info('Starting fresh round - using lower delay')
-            else:
-                delay_used = calculate_cooldown(distance, speed)
             self.logger.debug(
                 "Need more sleep after Teleport: {} seconds!", int(delay_used))
         else:
-            delay_used = distance / (speed / 3.6)  # speed is in kmph , delay_used need mps
+            delay_used, speed_mps_calculated = calculate_cooldown(distance, speed)
             self.logger.info("main: Walking {} m, this will take {} seconds", distance, delay_used)
-            cur_time = self._walk_to_location(speed)
+            cur_time = self._walk_to_location(speed_mps_calculated * 3.6)
 
             delay_used = self.get_devicesettings_value('post_walk_delay', 0)
         walk_distance_post_teleport = self.get_devicesettings_value('walk_after_teleport_distance', 0)
